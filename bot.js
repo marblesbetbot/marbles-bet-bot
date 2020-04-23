@@ -42,6 +42,42 @@ client.on("chat", function(channel, user, message, self) {
   // Don't listen to my own messages..
   if (self) return;
 
+  if (typeof message === "string" && message.indexOf("!gamble1") === 0) {
+
+
+    const [command, gambleAmount] = message.toLowerCase().split(" ");
+    
+    if (isNaN(gambleAmount)) {
+      reply(user, `Please enter a valid amount`, true);
+      return;
+    }
+    
+    const gambleAmountInt = parseInt(gambleAmount)
+
+    const wallet = getWallet(user);
+
+    if (wallet.amount < gambleAmountInt) {
+      reply(user, `You only have ${wallet.amount} coins to gamble with`);
+      return;
+    }
+    
+    const roll = Math.floor(Math.random() * 100) + 1;
+    
+    let wonAmount;
+    
+    if (roll === 100) {
+      wonAmount = (gambleAmountInt *= 2);
+    } else if (roll >= 50) {
+      wonAmount = gambleAmountInt
+    } else {
+      wonAmount = -gambleAmountInt;
+    }
+    
+    game.wallets[user.username].amount += wonAmount;
+    
+    reply(user, `Rolled ${roll}, ${user.username} won ${wonAmount} Points and now has ${game.wallets[user.username].amount} Points`)
+  }
+
   if (message === "!play") {
     game.activePlayers[user.username] = Object.assign(user, {
       betOnBy: {}
